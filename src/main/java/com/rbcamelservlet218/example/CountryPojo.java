@@ -2,6 +2,8 @@ package com.rbcamelservlet218.example;
 
 public class CountryPojo {
 
+	public CountryPojo() {
+	}
 	
 	public CountryPojo(int id, String city, String postCode, String country) {
 		super();

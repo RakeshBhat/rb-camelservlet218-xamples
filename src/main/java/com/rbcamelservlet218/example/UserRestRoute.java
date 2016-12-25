@@ -30,6 +30,7 @@ public class UserRestRoute extends RouteBuilder {
 	        .route()
 	        	            .choice()
 	                .when().simple("${body.id} < 100")
+	                    .log("${body}")
 	                    .bean(new UserErrorService(), "idToLowError")
 	                .otherwise()
 	                    .bean(new UserService(), "livesWhere");
