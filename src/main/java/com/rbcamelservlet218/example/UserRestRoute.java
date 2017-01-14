@@ -36,6 +36,7 @@ public class UserRestRoute extends RouteBuilder {
 	                .otherwise()
 	                    .bean(new UserService(), "livesWhere");
 		
+		//wireTap
 		rest("/country/")
 		.consumes("application/json")
 		.produces("application/json")
@@ -57,7 +58,7 @@ public class UserRestRoute extends RouteBuilder {
 		.to("direct:helperRoute")
 		.log(LoggingLevel.INFO, "completed processing request");
 		
-		
+		//SEDA
 		rest("/country/")
 		.consumes("application/json")
 		.produces("application/json")
@@ -65,18 +66,18 @@ public class UserRestRoute extends RouteBuilder {
 		.to("direct:newCountry");
 		
 		from("direct:newCountry")
-		.log(LoggingLevel.INFO, "received addCountry request.")
-		.to("seda:proccessingRecords")
+		.log(LoggingLevel.INFO, "SEDA-received addCountry request.")
+		.to("seda:proccessingRecords?waitForTaskToComplete=Never")
 		.bean(HelperBean.class, "buildResponse")
-		.log(LoggingLevel.INFO, "replying back to client.")
+		.log(LoggingLevel.INFO, "SEDA-replying back to client.")
 		.transform(simple("${body}"));		
 		
 		from("seda:proccessingRecords")
-		.log(LoggingLevel.INFO, "continue processing request")
+		.log(LoggingLevel.INFO, "SEDA-continue processing request")
 		.delay(2000)
 		.loop(9)
 		.to("direct:helperRoute")
-		.log(LoggingLevel.INFO, "completed processing request");
+		.log(LoggingLevel.INFO, "SEDA-completed processing request");
 		
 		from("direct:helperRoute")
 		.log(LoggingLevel.INFO, "looping....");
