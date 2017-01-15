@@ -82,6 +82,26 @@ public class UserRestRoute extends RouteBuilder {
 		from("direct:helperRoute")
 		.log(LoggingLevel.INFO, "looping....");
 		
+		//WireTap-SEDA
+		rest("/add-country/")
+		.consumes("application/json")
+		.produces("application/json")
+		.post("lives").type(CountryPojo.class).outType(ResponsePojo.class)
+		.to("direct:newCountryAdd");
+		
+		from("direct:newCountryAdd")
+		.log(LoggingLevel.INFO, "WT-SEDA-received addCountry request.")
+		.wireTap("seda:proccessingAddRecords")
+		.bean(HelperBean.class, "buildResponse")
+		.log(LoggingLevel.INFO, "WT-SEDA-replying back to client.")
+		.transform(simple("${body}"));		
+		
+		from("seda:proccessingAddRecords")
+		.log(LoggingLevel.INFO, "WT-SEDA-continue processing request")
+		.delay(2000)
+		.loop(9)
+		.to("direct:helperRoute")
+		.log(LoggingLevel.INFO, "WT-SEDA-completed processing request");
 	}
 
 }
